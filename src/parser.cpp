@@ -1,6 +1,7 @@
 #include "parser.hpp"
 
 #include <cassert>
+#include <functional>
 #include <sstream>
 #include "precedence.hpp"
 #include "utils.hpp"
@@ -48,15 +49,15 @@ private:
     // clang-format off
     using enum TokenType;
     static inline auto parser_table = create_parser_table(
-        ParserTableEntry<Number>            { &number,   nullptr, Precedence::Unknown },
-        ParserTableEntry<Plus>              { &unary,    &binary, Precedence::Sum     },
-        ParserTableEntry<Minus>             { &unary,    &binary, Precedence::Sum     },
-        ParserTableEntry<Asterisk>          { nullptr,   &binary, Precedence::Product },
-        ParserTableEntry<AsteriskAsterisk>  { nullptr,   &binary, Precedence::Power   },
-        ParserTableEntry<Slash>             { nullptr,   &binary, Precedence::Product },
-        ParserTableEntry<OpeningParenthesis>{ &grouping, nullptr, Precedence::Unknown },
-        ParserTableEntry<ClosingParenthesis>{ nullptr,   nullptr, Precedence::Unknown },
-        ParserTableEntry<EndOfInput>        { nullptr,   nullptr, Precedence::Unknown }
+        ParserTableEntry<Number>            { &Parser::number,   nullptr,         Precedence::Unknown },
+        ParserTableEntry<Plus>              { &Parser::unary,    &Parser::binary, Precedence::Sum     },
+        ParserTableEntry<Minus>             { &Parser::unary,    &Parser::binary, Precedence::Sum     },
+        ParserTableEntry<Asterisk>          { nullptr,           &Parser::binary, Precedence::Product },
+        ParserTableEntry<AsteriskAsterisk>  { nullptr,           &Parser::binary, Precedence::Power   },
+        ParserTableEntry<Slash>             { nullptr,           &Parser::binary, Precedence::Product },
+        ParserTableEntry<OpeningParenthesis>{ &Parser::grouping, nullptr,         Precedence::Unknown },
+        ParserTableEntry<ClosingParenthesis>{ nullptr,           nullptr,         Precedence::Unknown },
+        ParserTableEntry<EndOfInput>        { nullptr,           nullptr,         Precedence::Unknown }
     );
     // clang-format on
 };
@@ -121,7 +122,7 @@ void Parser::consume(TokenType const type, std::string const& error_message) {
 }
 
 [[nodiscard]] std::unique_ptr<Expression> Parser::grouping() {
-    advance(); // Consume '('.
+    advance();  // Consume '('.
     auto inner_expression = expression();
     consume(ClosingParenthesis, "Expected ')'.");
     return inner_expression;
