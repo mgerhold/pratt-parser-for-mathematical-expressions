@@ -29,6 +29,8 @@ inline std::ostream& operator<<(std::ostream& os, TokenType const token_type) {
             return os << "Minus";
         case TokenType::Asterisk:
             return os << "Asterisk";
+        case TokenType::AsteriskAsterisk:
+            return os << "AsteriskAsterisk";
         case TokenType::Slash:
             return os << "Slash";
         case TokenType::OpeningParenthesis:
